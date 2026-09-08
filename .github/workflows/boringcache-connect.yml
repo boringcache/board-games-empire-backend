@@ -1,0 +1,24 @@
+name: Connect BoringCache
+
+on:
+  push:
+    branches: [boringcache-validation]
+    paths: [.github/workflows/boringcache-connect.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  connect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install BoringCache
+        run: |
+          curl -fsSL https://install.boringcache.com/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Connect GitHub workload identity
+        run: boringcache ci connect --oidc-provider github-actions
