@@ -1,9 +1,11 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
+      - boringcache-validation
   pull_request:
     branches:
       - master
@@ -11,6 +13,7 @@ on:
 permissions:
   actions: read
   contents: read
+  id-token: write
 
 # Superseded pushes to a PR stop running instead of burning minutes to
 # completion (#259). Push events (master) get a per-commit group instead of
@@ -129,12 +132,6 @@ jobs:
       - run: npx nx run-many -t typecheck ${{ steps.catalogs.outputs.changed == 'true' && '--skip-nx-cache' || '' }}
       - run: npx nx affected -t test --parallel --maxParallel=3 --passWithNoTests
       - run: npx nx affected -t lint build --parallel --maxParallel=3
-
-      # Nx Cloud self-healing stays scoped to this job (D-259-1): letting it
-      # act on e2e failures against real containers is not something to
-      # invite while the suite's flake profile is uncharacterised.
-      - run: npx nx fix-ci
-        if: always()
 
   # Black-box e2e gate (#259). Provisions real Postgres + Redis via
   # testcontainers on the runner's Docker daemon (D-1 on #255). Advisory at
